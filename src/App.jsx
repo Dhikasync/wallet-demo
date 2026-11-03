@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ethers } from 'ethers'
+import './App.css'
 
 const MESSAGE = 'Hello from wallet-demo - I own this address'
 
@@ -58,27 +59,101 @@ function App() {
     setRecovered(recoveredAddress)
   }
 
+  function disconnectWallet() {
+    setAddress('')
+    setBalance('')
+    setStatus('')
+    setTxHash('')
+    setSignature('')
+    setRecovered('')
+  }
+
   return (
-    <div>
-      <h1>Wallet Demo</h1>
-      <button onClick={connectWallet}>Connect Wallet</button>
-      {address && <p>Address: {address}</p>}
-      {balance && <p>Balance: {balance} SepoliaETH</p>}
-      {address && (
-        <button onClick={sendToSelf}>Send 0.001 to myself</button>
-      )}
-      {status && <p>Status: {status}</p>}
-      {txHash && <p>Tx hash: {txHash}</p>}
-      {address && (
-        <button onClick={signLoginMessage}>Sign login message</button>
-      )}
-      {signature && <p>Signature: {signature}</p>}
-      {recovered && <p>Recovered address: {recovered}</p>}
-      {recovered && address && (
-        <p>
-          Match: {recovered.toLowerCase() === address.toLowerCase() ? 'Yes' : 'No'}
+    <div className="app">
+      <div className="card">
+        <span className="badge">Sepolia Testnet</span>
+        <h1>Wallet Demo</h1>
+        <p className="subtitle">
+          Connect MetaMask, read your balance, send a test transaction,
+          and sign a login message.
         </p>
-      )}
+
+        {!address && (
+          <button className="btn btn-primary" onClick={connectWallet}>
+            Connect Wallet
+          </button>
+        )}
+
+        {address && (
+          <div>
+            <div className="balance-box">
+              <span className="balance-label">Balance</span>
+              <span className="balance-value">{balance}</span>
+              <span className="balance-unit">SepoliaETH</span>
+            </div>
+
+            <p className="label">Address</p>
+            <p className="mono-box">{address}</p>
+            <a
+              className="link"
+              href={`https://sepolia.etherscan.io/address/${address}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              View address on Sepolia Etherscan →
+            </a>
+
+            <div className="actions">
+              <button className="btn btn-primary" onClick={sendToSelf}>
+                Send 0.001 to myself
+              </button>
+              <button className="btn btn-secondary" onClick={signLoginMessage}>
+                Sign login message
+              </button>
+              <button className="btn btn-ghost" onClick={disconnectWallet}>
+                Disconnect
+              </button>
+            </div>
+
+            {status && <p className="status">Status: {status}</p>}
+
+            {txHash && (
+              <div className="result">
+                <p className="label">Tx hash</p>
+                <p className="mono-box">{txHash}</p>
+                <a
+                  className="link"
+                  href={`https://sepolia.etherscan.io/tx/${txHash}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  View transaction on Sepolia Etherscan →
+                </a>
+              </div>
+            )}
+
+            {signature && (
+              <div className="result">
+                <p className="label">Signature</p>
+                <p className="mono-box">{signature}</p>
+              </div>
+            )}
+
+            {recovered && (
+              <div className="result">
+                <p className="label">Recovered address</p>
+                <p className="mono-box">{recovered}</p>
+                <p className="match">
+                  Match:{' '}
+                  {recovered.toLowerCase() === address.toLowerCase()
+                    ? 'Yes ✓'
+                    : 'No'}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
