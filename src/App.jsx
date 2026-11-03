@@ -3,6 +3,12 @@ import { ethers } from 'ethers'
 import './App.css'
 
 const MESSAGE = 'Hello from wallet-demo - I own this address'
+const CONTRACT_ADDRESS = '0x94c2B5aE9Dd5686565865cFA895FA8Fd31338200'
+const CONTRACT_ABI = [
+  'function favoriteNumber() view returns (uint256)',
+  'function setNumber(uint256 _number)',
+  'function getNumber() view returns (uint256)',
+]
 
 function App() {
   const [address, setAddress] = useState('')
@@ -11,6 +17,9 @@ function App() {
   const [txHash, setTxHash] = useState('')
   const [signature, setSignature] = useState('')
   const [recovered, setRecovered] = useState('')
+  const [newNumber, setNewNumber] = useState('')
+  const [storedNumber, setStoredNumber] = useState('')
+  const [contractStatus, setContractStatus] = useState('')
 
   async function connectWallet() {
     if (!window.ethereum) {
@@ -59,6 +68,37 @@ function App() {
     setRecovered(recoveredAddress)
   }
 
+  async function getNumberOnChain() {
+    if (!address) {
+      alert('Connect your wallet first')
+      return
+    }
+    const provider = new ethers.BrowserProvider(window.ethereum)
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
+    const value = await contract.getNumber()
+    setStoredNumber(value.toString())
+  }
+
+  async function setNumberOnChain() {
+    if (!address) {
+      alert('Connect your wallet first')
+      return
+    }
+    if (newNumber === '') {
+      alert('Type a number first')
+      return
+    }
+    setContractStatus('Waiting for approval...')
+    const provider = new ethers.BrowserProvider(window.ethereum)
+    const signer = await provider.getSigner()
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
+    const tx = await contract.setNumber(newNumber)
+    setContractStatus('Sent, waiting for confirmation...')
+    await tx.wait()
+    setContractStatus('Confirmed on-chain')
+    await getNumberOnChain()
+  }
+
   function disconnectWallet() {
     setAddress('')
     setBalance('')
@@ -66,6 +106,8 @@ function App() {
     setTxHash('')
     setSignature('')
     setRecovered('')
+    setStoredNumber('')
+    setContractStatus('')
   }
 
   return (
@@ -75,7 +117,7 @@ function App() {
         <h1>Wallet Demo</h1>
         <p className="subtitle">
           Connect MetaMask, read your balance, send a test transaction,
-          and sign a login message.
+          sign a login message, and talk to a Storage contract.
         </p>
 
         {!address && (
@@ -151,6 +193,31 @@ function App() {
                 </p>
               </div>
             )}
+
+            <div className="result">
+              <h2>Storage Contract</h2>
+              <p className="label">Contract address</p>
+              <p className="mono-box">{CONTRACT_ADDRESS}</p>
+              <input
+                className="input"
+                type="number"
+                placeholder="Type a number, e.g. 42"
+                value={newNumber}
+                onChange={(e) => setNewNumber(e.target.value)}
+              />
+              <div className="actions">
+                <button className="btn btn-primary" onClick={setNumberOnChain}>
+                  Set number on-chain
+                </button>
+                <button className="btn btn-secondary" onClick={getNumberOnChain}>
+                  Get stored number
+                </button>
+              </div>
+              {contractStatus && <p className="status">{contractStatus}</p>}
+              {storedNumber !== '' && (
+                <p className="match">Stored number: {storedNumber}</p>
+              )}
+            </div>
           </div>
         )}
       </div>

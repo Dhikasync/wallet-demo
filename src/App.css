@@ -160,3 +160,12 @@ body {
   font-weight: 700;
   color: #15803d;
 }
+
+.input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  font-size: 15px;
+}
